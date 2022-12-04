@@ -18,9 +18,7 @@ def rucksack2priority(rucksack: str) -> int:
 
 
 def compute_total_part1(text: str) -> int:
-    clean_text = list(
-        filter(lambda x: x != "", map(str.strip, text.strip().split("\n")))
-    )
+    clean_text = filter(lambda x: x != "", map(str.strip, text.strip().split("\n")))
     return sum(map(rucksack2priority, clean_text))
 
 
