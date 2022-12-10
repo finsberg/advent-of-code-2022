@@ -1,5 +1,7 @@
+import typing
 from pathlib import Path
 
+T = typing.TypeVar("T")
 here = Path(__file__).absolute().parent
 
 
@@ -17,6 +19,14 @@ def rucksack2priority(rucksack: str) -> int:
     return compute_priority(common_item)
 
 
+def create_groups_of_three(
+    lst: typing.Iterable[T],
+) -> typing.Iterable[
+    typing.Tuple[typing.Any, ...]
+]:  # actually typing.Iterable[typing.Tuple[T, T, T]]:
+    return zip(*[iter(lst)] * 3)
+
+
 def compute_total_part1(text: str) -> int:
     clean_text = filter(lambda x: x != "", map(str.strip, text.strip().split("\n")))
     return sum(map(rucksack2priority, clean_text))
@@ -25,18 +35,11 @@ def compute_total_part1(text: str) -> int:
 def compute_total_part2(text: str) -> int:
     rucksacks = filter(lambda x: x != "", map(str.strip, text.strip().split("\n")))
 
-    common = set(next(rucksacks))
     total = 0
-    for i, rucksack in enumerate(rucksacks, start=1):
-        if i % 3 == 0:
-            assert len(common) == 1
-            total += compute_priority(common.pop())
-            common = set(rucksack)
-        else:
-            common &= set(rucksack)
+    for (fst, snd, thrd) in create_groups_of_three(rucksacks):
+        common = set(fst) & set(snd) & set(thrd)
+        total += compute_priority(common.pop())
 
-    assert (i + 1) % 3 == 0
-    total += compute_priority(common.pop())
     return total
 
 
@@ -46,7 +49,7 @@ def main() -> int:
         text = f.read()
 
     print(f"Part 1:\n{compute_total_part1(text)}")
-    print(f"Part 1:\n{compute_total_part2(text)}")
+    print(f"Part 2:\n{compute_total_part2(text)}")
 
     return 0
 
@@ -72,3 +75,7 @@ else:
     @pytest.mark.parametrize(("text", "expected_total"), ((example_input, 70),))
     def test_compute_total_part2(text, expected_total) -> None:
         assert compute_total_part2(text) == expected_total
+
+    def test_create_groups_of_three():
+        groups = create_groups_of_three(range(9))
+        assert list(groups) == [(0, 1, 2), (3, 4, 5), (6, 7, 8)]
